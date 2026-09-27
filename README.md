@@ -2,7 +2,7 @@
 
 Fast, modern webmail in one click.
 
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.app/new?template=snappymail-template)
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/snappymail-template)
 
 SnappyMail is a **webmail client**, not a mail server: it connects to your **existing IMAP/SMTP mail** (Gmail, Outlook, your own mail host) and gives you a fast web interface for it. Nothing else is required beyond your mail provider.
 
