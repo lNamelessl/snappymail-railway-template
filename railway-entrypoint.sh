@@ -6,8 +6,11 @@
 #
 # Verified against the djmaze/snappymail:v2.38.2 image and SnappyMail v2.38.2
 # source:
-#   * Railway volumes mount root:root while the app runs as www-data (uid 82)
-#     -> the volume must be chowned before anything writes to it.
+#   * The container starts as root but all app data is written by www-data
+#     (Alpine uid/gid 82:82; the nginx user 101 is also in that group).
+#     Railway volumes mount root:root, so the volume must be chowned BEFORE
+#     anything writes to it — otherwise the first mkdir() dies with
+#     "Permission denied".
 #   * Admin auth checks ONLY the bcrypt hash in
 #     /var/lib/snappymail/_data_/_default_/configs/application.ini
 #     (security.admin_password). The freshly generated skeleton ships it empty
@@ -33,12 +36,15 @@ chown -R www-data:www-data "$DATA" 2>/dev/null || true
 
 # 2. Build the data skeleton if missing (same command the stock entrypoint
 #    uses; doing it here lets us seed the password into the fresh ini before
-#    the servers start).
+#    the servers start). NOTE: the data dir must end up mode 750 (owner
+#    www-data needs WRITE on it to create _data_) — the stock script's
+#    550 + find-750 dance has exactly this net effect.
 if [ ! -f "$INI" ]; then
     echo "[railway] First boot: creating SnappyMail data skeleton in $DATA"
     mkdir -p "$DATA"
-    chown www-data:www-data "$DATA"
-    chmod 550 "$DATA"
+    chown -R www-data:www-data "$DATA"
+    chmod 750 "$DATA"
+    find "$DATA" -type d -exec chmod 750 {} \;
     su - www-data -s /bin/sh -c 'php /snappymail/index.php'
 fi
 
