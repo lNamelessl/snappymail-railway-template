@@ -1,0 +1,3 @@
+mutation VariableUpsert($projectId: String!, $environmentId: String!, $serviceId: String!, $name: String!, $value: String!) {
+  variableUpsert(input: { projectId: $projectId, environmentId: $environmentId, serviceId: $serviceId, name: $name, value: $value })
+}

@@ -5,6 +5,21 @@
 # supervisord, data volume /var/lib/snappymail, container user root.
 FROM djmaze/snappymail:v2.38.2
 
+# Railway build quirk (same as the Roundcube fix): files that an image layer
+# only DELETED get re-materialized at container start on Railway, while
+# CREATE operations stick. The base image renamed the stock php-fpm pools
+# (docker.conf/www.conf/zz-docker.conf -> *.disabled) so only its own
+# [default] pool loads; Railway resurrected the stock [www] pool, which then
+# collided with [default] on port 9000 ("unable to set listen address as
+# it's already used in another pool 'www'" -> FPM init failed -> crash loop).
+# Fix: OVERWRITE all three with comment-only files (a create op always sticks;
+# a comment-only pool config defines no pool and is harmless).
+RUN ls -la /usr/local/etc/php-fpm.d/ > /tmp/fpmdump.txt; \
+    for f in docker.conf www.conf zz-docker.conf; do \
+        printf '; disabled for Railway: only the custom [default] pool may load\n' > "/usr/local/etc/php-fpm.d/$f"; \
+    done; \
+    ls -la /usr/local/etc/php-fpm.d/
+
 # Railway probes/routes by the PORT variable. The image's nginx listens on a
 # hardcoded 8888, so align PORT with it (kept as image ENV, not a service
 # variable, so published templates stay zero-prompt). EXPOSE is re-declared

@@ -1,0 +1,5 @@
+mutation VolumeCreate($serviceId: String!, $projectId: String!) {
+  volumeCreate(input: { serviceId: $serviceId, projectId: $projectId, mountPath: "/var/lib/snappymail" }) {
+    id
+  }
+}
