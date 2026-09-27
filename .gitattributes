@@ -1,0 +1,4 @@
+# Force LF everywhere — the entrypoint script must not carry CRLF into Linux
+* text=auto eol=lf
+*.sh text eol=lf
+*.json text eol=lf
